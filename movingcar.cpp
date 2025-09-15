@@ -52,7 +52,6 @@ MovingCar::MovingCar(QWidget *parent)
     updateSpeedDisplay();
 
     // 连接信号和槽
-    connect(ui->speedButton, &QPushButton::clicked, this, &MovingCar::on_speedButton_clicked);
     connect(moveTimer, &QTimer::timeout, this, &MovingCar::moveCarStep);
 
     // 初始化系统托盘
@@ -123,7 +122,7 @@ void MovingCar::on_speedButton_clicked()
 {
     // 切换到下一个速度
     speedIndex = (speedIndex + 1) % SPEED_COUNT;
-    updateSpeedDisplay();
+    qDebug() << "after:" << speedIndex;
 }
 
 void MovingCar::updateSpeedDisplay()
