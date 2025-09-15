@@ -5,15 +5,16 @@
 #include <QPixmap>
 #include <QStyle>
 
-// 静态成员定义
+// 可选速度
 const int MovingCar::speedOptions[SPEED_COUNT][2] = {
     {2, 2},   // 1x速度
-    {4, 4},   // 2x速度
-    {10, 10}    // 5x速度
+    {8, 8},   // 4x速度
+    {20, 20}    // 10x速度
 };
 
+// 速度对应显示
 const char* MovingCar::speedNames[SPEED_COUNT] = {
-    "1x", "2x", "5x"
+    "1x", "4x", "20x"
 };
 
 MovingCar::MovingCar(QWidget *parent)
@@ -33,14 +34,15 @@ MovingCar::MovingCar(QWidget *parent)
     setFixedSize(600, 600);
 
     // 设置小车图片
-    QPixmap carPixmap(":/images/car.png");
+    // QPixmap carPixmap(":/images/car.png");
+    QPixmap carPixmap("E:/Qt Project/MovingCar/images/car.png");
     if (carPixmap.isNull()) {
         // 如果没有图片资源，创建简单的文本标识
         ui->carLabel->setText("🚗");
         ui->carLabel->setStyleSheet("font-size: 24px;");
     } else {
         // 缩放图片到合适大小
-        carPixmap = carPixmap.scaled(40, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        carPixmap = carPixmap.scaled(100, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         // 将carlabel设置为图片
         ui->carLabel->setPixmap(carPixmap);
     }
@@ -66,6 +68,7 @@ MovingCar::~MovingCar()
     delete ui;
 }
 
+// 初始化系统托盘图标，但不显示
 void MovingCar::initTrayIcon()
 {
     // 创建托盘菜单
@@ -87,13 +90,15 @@ void MovingCar::initTrayIcon()
     trayIcon->setToolTip("移动小车程序");
 
     // 设置托盘图标
-    QIcon icon(":/images/car.png");
+    // QIcon icon(":/images/car.png");
+    QIcon icon("E:/Qt Project/MovingCar/images/car.png");
     if (icon.isNull()) {
         icon = style()->standardIcon(QStyle::SP_ComputerIcon);
     }
     trayIcon->setIcon(icon);
 }
 
+// 更新小车位置
 void MovingCar::moveCarStep()
 {
     // 计算新位置
@@ -102,7 +107,7 @@ void MovingCar::moveCarStep()
 
     // 检查边界，超出则重置到左上角
     if (newX >= width() - ui->carLabel->width() ||
-        newY >= height() - ui->carLabel->height() - 60) { // 为底部控件留空间
+        newY >= height() - ui->carLabel->height() ) {
         newX = 0;
         newY = 0;
 
@@ -118,19 +123,23 @@ void MovingCar::moveCarStep()
     ui->carLabel->move(carX, carY);
 }
 
+// 更换速度按钮触发逻辑
 void MovingCar::on_speedButton_clicked()
 {
     // 切换到下一个速度
     speedIndex = (speedIndex + 1) % SPEED_COUNT;
-    qDebug() << "after:" << speedIndex;
+    updateSpeedDisplay();
 }
 
+// 更新速度显示
 void MovingCar::updateSpeedDisplay()
 {
+    qDebug() << speedIndex;
     ui->speedButton->setText(QString("%1 速度").arg(speedNames[speedIndex]));
     ui->statusLabel->setText(QString("当前速度: %1").arg(speedNames[speedIndex]));
 }
 
+// 恢复程序前台运行逻辑
 void MovingCar::showWindow()
 {
     show();
@@ -141,6 +150,7 @@ void MovingCar::showWindow()
     }
 }
 
+// 关闭程序逻辑
 void MovingCar::exitApplication()
 {
     moveTimer->stop();
@@ -150,14 +160,39 @@ void MovingCar::exitApplication()
     QApplication::quit();
 }
 
+/**
+ *  前台运行时关闭程序逻辑
+ *  可选后台运行或者直接关闭
+ *  后台运行则会将系统托盘设为可视
+ */
 void MovingCar::closeEvent(QCloseEvent *event)
 {
     if (trayIcon && !trayIcon->isVisible()) {
-        QMessageBox::information(this, "系统托盘",
-                                 "程序将在后台继续运行。\n"
-                                 "右键托盘图标可以恢复或退出程序。");
-        hide();
-        trayIcon->show(); // 显示托盘图标
-        event->ignore();  // 忽略关闭事件，程序继续运行
+        // 创建一个带两个按钮的消息对话框
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("系统托盘");
+        msgBox.setText("程序将在后台继续运行，还是直接退出？");
+        msgBox.setInformativeText("右键托盘图标可以恢复或退出程序。");
+
+        // 添加按钮
+        QPushButton *backgroundBtn = msgBox.addButton("后台运行", QMessageBox::AcceptRole);
+        QPushButton *exitBtn       = msgBox.addButton("直接关闭", QMessageBox::DestructiveRole);
+
+        // 显示对话框并等待用户选择
+        msgBox.exec();
+
+        // 根据结果处理
+        if (msgBox.clickedButton() == exitBtn) {
+            // 用户选择直接退出
+            event->accept();  // 接受关闭事件，程序关闭
+        } else {
+            // 用户选择后台运行
+            hide();
+            trayIcon->show();
+            event->ignore();  // 忽略关闭事件，不退出
+        }
+    } else {
+        // 如果托盘图标已存在或其他情况，就按原逻辑关闭
+        QWidget::closeEvent(event);
     }
 }
