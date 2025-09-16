@@ -34,17 +34,11 @@ MovingCar::MovingCar(QWidget *parent)
     setFixedSize(600, 600);
 
     // 设置小车图片
-    QPixmap carPixmap("");
-    if (carPixmap.isNull()) {
-        // 如果没有图片资源，创建简单的文本标识
-        ui->carLabel->setText("🚗");
-        ui->carLabel->setStyleSheet("font-size: 24px;");
-    } else {
-        // 缩放图片到合适大小
-        carPixmap = carPixmap.scaled(100, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        // 将carlabel设置为图片
-        ui->carLabel->setPixmap(carPixmap);
-    }
+    QPixmap carPixmap(":/images/car.png");
+    // 缩放图片到合适大小
+    carPixmap = carPixmap.scaled(100, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    // 将carlabel设置为图片
+    ui->carLabel->setPixmap(carPixmap);
 
     // 初始化小车位置
     ui->carLabel->move(carX, carY);
@@ -93,10 +87,7 @@ void MovingCar::initTrayIcon()
     trayIcon->setToolTip("移动小车程序");
 
     // 设置托盘图标
-    QIcon icon(":/images/car.png");
-    if (icon.isNull()) {
-        icon = style()->standardIcon(QStyle::SP_ComputerIcon);
-    }
+    QIcon icon(":images/car.png");
     trayIcon->setIcon(icon);
 }
 
