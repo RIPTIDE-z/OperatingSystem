@@ -30,13 +30,12 @@ protected:
 
 private slots:
     void moveCarStep();           // 定时器触发的小车移动
-    void on_speedButton_clicked();// 速度按钮点击
+    void speedButtonClicked();// 速度按钮点击
     void showWindow();            // 从托盘恢复窗口
     void exitApplication();       // 退出应用程序
 
 private:
     void initTrayIcon();         // 初始化系统托盘
-    void updateCarPosition();    // 更新小车位置
     void updateSpeedDisplay();   // 更新速度显示
 
     Ui::MovingCar *ui;

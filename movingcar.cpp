@@ -34,8 +34,7 @@ MovingCar::MovingCar(QWidget *parent)
     setFixedSize(600, 600);
 
     // 设置小车图片
-    // QPixmap carPixmap(":/images/car.png");
-    QPixmap carPixmap("E:/Qt Project/MovingCar/images/car.png");
+    QPixmap carPixmap("");
     if (carPixmap.isNull()) {
         // 如果没有图片资源，创建简单的文本标识
         ui->carLabel->setText("🚗");
@@ -76,6 +75,7 @@ void MovingCar::initTrayIcon()
     restoreAction = new QAction("恢复", this);
     exitAction = new QAction("退出", this);
 
+    // 为托盘添加action
     trayMenu->addAction(restoreAction);
     trayMenu->addSeparator();
     trayMenu->addAction(exitAction);
@@ -84,14 +84,16 @@ void MovingCar::initTrayIcon()
     connect(restoreAction, &QAction::triggered, this, &MovingCar::showWindow);
     connect(exitAction, &QAction::triggered, this, &MovingCar::exitApplication);
 
+    // 连接速度切换按钮
+    connect(ui->speedButton, &QPushButton::clicked, this, &MovingCar::speedButtonClicked);
+
     // 创建系统托盘图标
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setContextMenu(trayMenu);
     trayIcon->setToolTip("移动小车程序");
 
     // 设置托盘图标
-    // QIcon icon(":/images/car.png");
-    QIcon icon("E:/Qt Project/MovingCar/images/car.png");
+    QIcon icon(":/images/car.png");
     if (icon.isNull()) {
         icon = style()->standardIcon(QStyle::SP_ComputerIcon);
     }
@@ -124,7 +126,7 @@ void MovingCar::moveCarStep()
 }
 
 // 更换速度按钮触发逻辑
-void MovingCar::on_speedButton_clicked()
+void MovingCar::speedButtonClicked()
 {
     // 切换到下一个速度
     speedIndex = (speedIndex + 1) % SPEED_COUNT;
@@ -134,7 +136,6 @@ void MovingCar::on_speedButton_clicked()
 // 更新速度显示
 void MovingCar::updateSpeedDisplay()
 {
-    qDebug() << speedIndex;
     ui->speedButton->setText(QString("%1 速度").arg(speedNames[speedIndex]));
     ui->statusLabel->setText(QString("当前速度: %1").arg(speedNames[speedIndex]));
 }
